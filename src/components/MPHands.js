@@ -3,6 +3,7 @@ import { Hands } from "@mediapipe/hands";
 import {Camera} from "@mediapipe/camera_utils";
 import Webcam from "react-webcam";
 import drawUtils from '@mediapipe/drawing_utils';
+import axios from 'axios';
 // eslint-disable-next-line
 import {useRef, useEffect} from 'react';
 
@@ -11,9 +12,19 @@ const MPHands = () => {
   const canvasRef = useRef(null);
 
   function onResults(results){
-    console.log(JSON.stringify(results.multiHandLandmarks));
-    console.log(JSON.stringify(results.multiHandWorldLandmarks));
-    console.log(JSON.stringify(results.multiHandedness));
+    const MultiHandLandmarks = JSON.stringify(results.multiHandLandmarks);
+    const MultiHandWorldLandmarks = JSON.stringify(results.multiHandWorldLandmarks);
+    const MultiHandedness = JSON.stringify(results.multiHandedness);
+
+    axios.post("/api/myhand", {
+      multiHandLandmarks : MultiHandLandmarks,
+      multiHandWorldLandmarks : MultiHandWorldLandmarks,
+      multiHandedness : MultiHandedness
+    }).then(response => {
+      console.log(response.data);
+    }).catch(error => {
+      console.log(error);
+    });
 
     //setting height, width of Canvas
     canvasRef.current.width = webcamRef.current.video.videoWidth;
@@ -30,7 +41,9 @@ const MPHands = () => {
           drawUtils.drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
         }
       }
+      
       canvasCtx.restore();
+      console.log("onResults");
   }
 
   useEffect(() => {
@@ -58,7 +71,7 @@ const MPHands = () => {
       });
       camera.start();
     }
-  });
+  }, []);
 
     return (
     <>
